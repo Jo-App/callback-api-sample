@@ -3,23 +3,39 @@ import express from 'express';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 중요 ⭐
+// ⭐ 핵심 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/callback', (req, res) => {
+app.post('/', (req, res) => {
+  console.log('==============================');
   console.log('📩 Callback received');
   console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
+  console.log('Raw Body:', req.body);
 
-  res.status(200).json({
-    success: true,
-    receivedAt: new Date().toISOString(),
+  // 🔥 json_data 처리
+  if (req.body.json_data) {
+    try {
+      const decoded = decodeURIComponent(req.body.json_data);
+      const parsed = JSON.parse(decoded);
+
+      console.log('✅ json_data (decoded):');
+      console.dir(parsed, { depth: null });
+    } catch (err) {
+      console.error('❌ json_data parse error:', err.message);
+    }
+  }
+
+  // 기타 파라미터
+  console.log('Other fields:', {
+    client_user_id: req.body.client_user_id,
+    start_at: req.body.start_at,
+    play_time: req.body.play_time,
+    playtime_percent: req.body.playtime_percent,
+    last_play_at: req.body.last_play_at,
   });
-});
 
-app.get('/', (req, res) => {
-  res.send('Callback API is running');
+  res.status(200).send('OK');
 });
 
 app.listen(PORT, () => {
