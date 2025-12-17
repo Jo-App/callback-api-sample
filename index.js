@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,11 +16,42 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/', (req, res) => {
+app.post('/health', (req, res) => {
   console.log('📩 Callback received');
   console.log('Body:', req.body);
 
   res.status(200).send('OK');
+});
+
+// JWT 시크릿 키
+const JWT_SECRET = '4CE97B173C9DD3CC';
+
+app.get('/check', (req, res) => {
+  const payload = {
+    cuid: '1234567890',
+    expt: Math.floor(Date.now() / 1000) + 60 * 60, // 1시간 후 만료
+    next_episode: true,
+    playback_rates: [0.5, 0.7, 1, 1.3, 1.5, 1.7, 2],
+    playcallback_ignore: true,
+    mc: [
+      {
+        mckey: 'oK4Kv5xv',
+        title: '테스트',
+        seek: false,
+        seekable_end: 10,
+      },
+    ],
+  };
+
+  // JWT 생성
+  const token = jwt.sign(payload, JWT_SECRET, {
+    algorithm: 'HS256',
+  });
+
+  res.json({
+    success: true,
+    token,
+  });
 });
 
 app.listen(PORT, () => {
