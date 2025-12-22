@@ -43,7 +43,7 @@ app.get('/check', (req, res) => {
     playcallback_ignore: true,
     mc: [
       {
-        mckey: 'oK4Kv5xv',
+        mckey: 'sfVnqCTy',
         title: '공개 샘플',
         seek: false,
         seekable_end: 10,
