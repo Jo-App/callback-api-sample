@@ -1,9 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 정적 파일 서빙 (index.html)
+app.use(express.static(__dirname));
 
 // ⭐ CORS 설정
 app.use(cors({
@@ -36,7 +44,7 @@ app.get('/check', (req, res) => {
     mc: [
       {
         mckey: 'oK4Kv5xv',
-        title: '테스트',
+        title: '공개 샘플',
         seek: false,
         seekable_end: 10,
       },

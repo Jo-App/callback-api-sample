@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Callback API Sample</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #00d9ff, #00ff88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #8892b0;
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title .icon {
+      font-size: 1.5rem;
+    }
+
+    .endpoint {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .method {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .method.get {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .method.post {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    .path {
+      font-family: 'Monaco', 'Menlo', monospace;
+      color: #00d9ff;
+      font-size: 0.95rem;
+    }
+
+    .description {
+      color: #8892b0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00d9ff, #00ff88);
+      color: #1a1a2e;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 217, 255, 0.3);
+    }
+
+    .result-box {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+      border: 1px solid rgba(0, 217, 255, 0.2);
+    }
+
+    .result-box.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #8892b0;
+      font-size: 0.85rem;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #10b981;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Callback API Sample</h1>
+      <p class="subtitle">JWT 토큰 생성 및 콜백 API 테스트</p>
+      <div style="margin-top: 20px;">
+        <span class="status-indicator">
+          <span class="status-dot"></span>
+          서버 실행 중
+        </span>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2 class="card-title">
+        <span class="icon">🔐</span>
+        토큰 발급
+      </h2>
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="path">/check</span>
+      </div>
+      <p class="description">JWT 토큰을 생성하여 반환합니다. 플레이어 인증에 사용할 수 있습니다.</p>
+      <div style="margin-top: 20px;">
+        <button class="btn btn-primary" onclick="fetchToken()">
+          <span>🚀</span>
+          토큰 발급받기
+        </button>
+      </div>
+      <div id="token-result" class="result-box"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">
+        <span class="icon">📩</span>
+        콜백 수신
+      </h2>
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <span class="path">/health</span>
+      </div>
+      <p class="description">플레이어 콜백을 수신합니다. 재생 상태, 진행률 등의 정보를 받아 처리합니다.</p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">
+        <span class="icon">📩</span>
+        영상 재생 TEST
+      </h2>
+      <iframe 
+        id="player"
+        src="https://v.kr.kollus.com/s?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdWlkIjoiMTIzNDU2Nzg5MCIsImV4cHQiOjE3NjYzOTg3OTEsIm5leHRfZXBpc29kZSI6dHJ1ZSwicGxheWJhY2tfcmF0ZXMiOlswLjUsMC43LDEsMS4zLDEuNSwxLjcsMl0sInBsYXljYWxsYmFja19pZ25vcmUiOnRydWUsIm1jIjpbeyJtY2tleSI6Im9LNEt2NXh2IiwidGl0bGUiOiLqs7XqsJwg7IOY7ZSMIiwic2VlayI6ZmFsc2UsInNlZWthYmxlX2VuZCI6MTB9XSwiaWF0IjoxNzY2Mzk1MTkxfQ.PqbnGyxVpwRFBFt-uixzXxxMVagm4KXDouRtSPMpxHk&custom_key=aa2f007b3c41a53e4b065a7b0fcda197656e840927c589967e1cabb8317fe85b"
+        width="100%" 
+        height="400px" 
+        frameborder="0" 
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <footer>
+      <p>© 2025 Callback API Sample</p>
+    </footer>
+  </div>
+
+  <script>
+    async function fetchToken() {
+      const resultBox = document.getElementById('token-result');
+      
+      try {
+        resultBox.textContent = '요청 중...';
+        resultBox.classList.add('show');
+        
+        const response = await fetch('/check');
+        const data = await response.json();
+        
+        resultBox.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultBox.textContent = '오류: ' + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
+
